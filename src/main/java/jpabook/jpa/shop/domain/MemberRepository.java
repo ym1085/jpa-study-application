@@ -1,4 +1,4 @@
-package jpabook.jpa.shop.member;
+package jpabook.jpa.shop.domain;
 
 import org.springframework.stereotype.Repository;
 
@@ -7,7 +7,6 @@ import javax.persistence.PersistenceContext;
 
 @Repository
 public class MemberRepository {
-
     @PersistenceContext
     private EntityManager em;
 
