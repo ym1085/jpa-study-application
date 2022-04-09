@@ -1,22 +1,20 @@
 package jpabook.jpa.shop.repository;
 
 import jpabook.jpa.shop.domain.Member;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
+// 01. @PersistenceUnit  => private EntityManagerFactory emf
+// 02. Spring Data JPA => EntityManager @Autowired 지원
+
 @Repository
+@RequiredArgsConstructor
 public class MemberRepository {
 
-    // inject entity manage factory from Spring
-    /*@PersistenceUnit
-    private EntityManagerFactory emf;*/
-
-    // inject entity manage from Spring
-    @PersistenceContext
-    private EntityManager em;
+    private final EntityManager em;
 
     public void save(Member member) {
         em.persist(member);
