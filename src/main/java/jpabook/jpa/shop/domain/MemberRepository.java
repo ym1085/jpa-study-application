@@ -1,3 +1,4 @@
+/*
 package jpabook.jpa.shop.domain;
 
 import org.springframework.stereotype.Repository;
@@ -19,3 +20,4 @@ public class MemberRepository {
         return em.find(Member.class, id);
     }
 }
+*/
