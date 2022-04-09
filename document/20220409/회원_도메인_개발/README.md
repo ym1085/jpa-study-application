@@ -179,8 +179,7 @@ public class MemberService {
 ```
 
 - @AllArgsConstructor, `@RequiredArgsConstructor` 사용.
-- @RequiredArgsConstructor 좀 더 생상적.
-- 추후 차이점 확실하게 파악.
+- @RequiredArgsConstructor 좀 더 생산적.
 
 ## 02. 회원 테스트 코드 작성
 
@@ -252,14 +251,14 @@ public class MemberServiceTest {
 
 - `Junit` 실행할 때 `Spring`이랑 엮어서 실행하고 싶을 경우 사용이 된다.
 - Junit 프레임워크의 테스트 실행 방법 확장 시 사용이 된다.
-- 각각의 테스트 별도 객체가 생성 되더라도 싱클톤(Singleton)의 Application Context 보장.
+- 각각의 테스트의 별도 객체가 생성 되더라도 싱글톤(Singleton)의 Application Context 보장.
 
 ### @SpringBootTest
 
 - `통합 테스트`를 제공하는 기본적인 스프링 부트 테스트 어노테이션.
 - 여러 단위의 테스트를 하나의 통합된 테스트로 수행할 때 사용되는 어노테이션.
 - 모든 테스트 수행 가능.
-- 애플리케이션에 설정된 모든 빈을 로드, 애플리케이션 성능 문제.
+- 애플리케이션에 설정된 모든 빈을 로드, 애플리케이션이 느려진다.
 
 ### @Transactional
 
