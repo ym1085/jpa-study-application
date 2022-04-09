@@ -15,10 +15,12 @@
 
 ```java
 @Entity
-class Member {
+@Table(name = "orders")
+public class Order {
+    // 기본 => @ManyToOne(fetch = FetchType.EAGER)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn
-    private Team team;
+    @JoinColumn(name = "member_id")
+    private Member member;
 }
 ```
 
