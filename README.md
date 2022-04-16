@@ -13,13 +13,18 @@
 | **DB**  | H2                |
 | **ORM** | Hibernate         |
 
-### 3. 정리
+### 3. Diagram
+
+![diagram](./images/diagram.PNG)
+
+### 4. 정리
 
 - [[20220403] 엔티티설계](./document/20220403/엔티티설계/README.md)
 - [[20220409] 애플리케이션 구현 준비](./document/20220409/애플리케이션_구현준비/README.md)
 - [[20220409] 엔티티설계_주의사항](./document/20220409/엔티티설계_주의사항/README.md)
 - [[20220409] 회원_도메인_개발](./document/20220409/회원_도메인_개발/README.md)
+- [[20220416] 상품 도메인 개발](./document/20220416/상품_도메인_개발/README.md)
 
-### 4. 참고 자료
+### 5. 참고 자료
 
 - [[인프런] 스프링 부트와 JPA 활용 - 웹 애플리케이션 개발](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8-JPA-%ED%99%9C%EC%9A%A9-1/dashboard)
