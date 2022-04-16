@@ -2,6 +2,7 @@ package jpabook.jpa.shop.domain.item;
 
 import jpabook.jpa.shop.exception.NotEnoughStockException;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE) //단일 테이블 전략
 @DiscriminatorColumn(name = "dtype")
-@Getter
+@Getter @Setter
 public abstract class Item {
 
     @Id
@@ -39,7 +40,7 @@ public abstract class Item {
      */
     public void removeStock(int quantity) {
         int restStock = this.stockQuantity - quantity;
-        if (restStock < 0) {
+        if (restStock < 0) { // 여기서 걸리겠네
             throw new NotEnoughStockException("need more stock");
         }
         this.stockQuantity = restStock;
