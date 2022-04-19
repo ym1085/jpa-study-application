@@ -46,33 +46,33 @@ import java.util.Map;
 @Controller
 @RequiredArgsConstructor
 class MemberController {
-  private final Logger log = LoggerFactory.getLogger(ApprovalController.class);
-
-  private final MemberService memberService;
-
-  @PostMapping("/member/join")
-  public Model join(@RequestParam HashMap<String, Object> paramMap) {
-    log.debug("paramMap = {}", paramMap.toString());
-
-    String userId = paramMap.get("userId");
-    String userPwd = paramMap.get("userPwd");
-    String userName = paramMap.get("userName");
-    String userPhoneNum = paramMap.get("userPhoneNum");
-    String userAddress = paramMap.get("userAddress");
-    String userAddressDetail = paramMap.get("userAddressDetail");
-    // .... 중략 -> 필드가 더 있다 가정
-
-    if (StringUtils.isNotBlank(userId)
-            && StringUtils.isNotBlank(userPwd)
-        /*  ...   */) {
-        // 공란이 존재하지 않거나, 정규식에 맞는 경우 회원 가입 진행
-        Map<String, Object> sqlParamMap = new HashMap<String, Object>();
-        sqlParamMap.put("userId", userId);
-        sqlParamMap.put("userPwd", userId);
-        // ..중략
-        memberService.join(sqlParamMap);
+    private final Logger log = LoggerFactory.getLogger(ApprovalController.class);
+  
+    private final MemberService memberService;
+  
+    @PostMapping("/member/join")
+    public Model join(@RequestParam HashMap<String, Object> paramMap) {
+      log.debug("paramMap = {}", paramMap.toString());
+  
+      String userId = paramMap.get("userId");
+      String userPwd = paramMap.get("userPwd");
+      String userName = paramMap.get("userName");
+      String userPhoneNum = paramMap.get("userPhoneNum");
+      String userAddress = paramMap.get("userAddress");
+      String userAddressDetail = paramMap.get("userAddressDetail");
+      // .... 중략 -> 필드가 더 있다 가정
+  
+      if (StringUtils.isNotBlank(userId)
+              && StringUtils.isNotBlank(userPwd)
+          /*  ...   */) {
+          // 공란이 존재하지 않거나, 정규식에 맞는 경우 회원 가입 진행
+          Map<String, Object> sqlParamMap = new HashMap<String, Object>();
+          sqlParamMap.put("userId", userId);
+          sqlParamMap.put("userPwd", userId);
+          // ..중략
+          memberService.join(sqlParamMap);
+      }
     }
-  }
 }
 ```
 
