@@ -17,7 +17,7 @@ public class ItemRepository {
         if (item.getId() == null) {
             em.persist(item);
         } else {
-            em.merge(item);
+            em.merge(item); // id 값이 존재하면, 해당 라인이 실행 됨
         }
     }
 

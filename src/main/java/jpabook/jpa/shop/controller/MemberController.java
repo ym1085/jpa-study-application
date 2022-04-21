@@ -2,18 +2,15 @@ package jpabook.jpa.shop.controller;
 
 import jpabook.jpa.shop.domain.Address;
 import jpabook.jpa.shop.domain.Member;
+import jpabook.jpa.shop.form.MemberForm;
 import jpabook.jpa.shop.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.util.List;
