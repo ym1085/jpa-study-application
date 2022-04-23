@@ -2,6 +2,8 @@ package jpabook.jpa.shop.repository;
 
 import jpabook.jpa.shop.domain.Order;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -14,6 +16,7 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class OrderRepository {
+    private Logger log = LoggerFactory.getLogger(OrderRepository.class);
 
     private final EntityManager em;
 
@@ -42,37 +45,40 @@ public class OrderRepository {
         boolean isFirstCondition = true;
 
         // 주문 상태 검색
-        if (orderSearch.getOrderStatus() != null) {
-            if (isFirstCondition) {
+        if(orderSearch.getOrderStatus() != null) { // 주문 상태 입력이 있을 경우(회원 명X)
+            if(isFirstCondition) { // 데이터가 조건절의 첫번째로 들어온 경우
                 jpql += " where";
                 isFirstCondition = false;
-            } else {
+            } else { // 조건절의 첫번째 요소가 아닌 경우
                 jpql += " and";
             }
             jpql += " o.status = :status";
         }
 
-        // 회원 이름 검색
-        if (StringUtils.hasText(orderSearch.getMemberName())) {
-            if (isFirstCondition) {
+        if(StringUtils.hasText(orderSearch.getMemberName())) { // 회원 명 데이터 입력이 있을 경우(주문 상태X)
+            if(isFirstCondition) {
                 jpql += " where";
                 isFirstCondition = false;
             } else {
                 jpql += " and";
             }
-            jpql += " m.name like = :name";
+            jpql += " m.username like :username";
         }
 
-        TypedQuery<Order> query = em.createQuery(jpql, Order.class)
-                                              .setMaxResults(1000);
+        log.info("jpql query = {}", jpql);
+        TypedQuery<Order> query = em.createQuery(jpql, Order.class).setMaxResults(1000);
+        log.info("query = {}", query);
 
-        if (orderSearch.getOrderStatus() != null) {
+        // 파라미터 바인딩 또한 동적으로 해야 한다.
+        // FIXME: Did not match type Error
+        if(orderSearch.getOrderStatus() != null) {
             query = query.setParameter("status", orderSearch.getOrderStatus());
         }
 
-        if (StringUtils.hasText(orderSearch.getMemberName())) {
-            query = query.setParameter("name", orderSearch.getMemberName());
+        if(StringUtils.hasText(orderSearch.getMemberName())) {
+            query = query.setParameter("username", orderSearch.getMemberName());
         }
+
         return query.getResultList();
     }
 
@@ -94,7 +100,7 @@ public class OrderRepository {
 
         // 회원 이름 검색
         if (StringUtils.hasText(orderSearch.getMemberName())) {
-            Predicate name = cb.like(member.get("name"), "%" + orderSearch.getMemberName() + "%");
+            Predicate name = cb.like(member.get("username"), "%" + orderSearch.getMemberName() + "%");
             criteria.add(name);
         }
 

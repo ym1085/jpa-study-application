@@ -2,6 +2,7 @@ package jpabook.jpa.shop.repository;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter @Setter
 public class OrderSearch {

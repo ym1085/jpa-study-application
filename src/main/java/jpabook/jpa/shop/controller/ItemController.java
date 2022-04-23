@@ -2,6 +2,7 @@ package jpabook.jpa.shop.controller;
 
 import jpabook.jpa.shop.domain.item.Book;
 import jpabook.jpa.shop.domain.item.Item;
+import jpabook.jpa.shop.dto.request.BookRequestDTO;
 import jpabook.jpa.shop.form.BookForm;
 import jpabook.jpa.shop.service.ItemService;
 import lombok.RequiredArgsConstructor;
