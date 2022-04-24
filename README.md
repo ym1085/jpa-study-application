@@ -1,5 +1,7 @@
 ## JPA Web Applcation 
 
+> 2022-04-23 JPA Application 강의 마무리
+
 ### 1. 요약
 
 개인적으로 JPA를 공부하며 배운 내용을 정리하는 공간.
