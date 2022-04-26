@@ -1,14 +1,18 @@
 package jpabook.jpa.shop.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Entity
-@Getter @Setter
+@Getter
+@Setter
+//@Builder
+//@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
 
     @Id @GeneratedValue
@@ -20,6 +24,16 @@ public class Member {
     @Embedded
     private Address address;
 
+//    @JsonIgnore
     @OneToMany(mappedBy = "member")
     private List<Order> orders = new ArrayList<>();
+
+//    Builder
+    public static class Builder<T> {
+        private String username;
+
+        public Builder(String username) {
+            this.username = username;
+        }
+    }
 }
