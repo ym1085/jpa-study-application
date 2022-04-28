@@ -288,7 +288,269 @@ Hibernate5Module을 Bean으로 등록하여 지연 로딩인 데이터를 안 �
 - 간단한 Application이 아닌 이상 Entity를 절대 API 응답으로 반환하면 안된다
     - 반환 할거면 DTO로 엔티티를 변환 한 후에 반환 해야 한다
 
-### 정리
+## 02. 엔티티 DTO로 반환
 
-- 할 일
-- 할 일
+이번에는 엔티티를 DTO로 변환하는 V2 API를 만들어보자.
+
+```java
+@RestController
+@RequiredArgsConstructor
+@Slf4j
+public class OrderSimpleAPIController {
+
+    private final OrderRepository orderRepository;
+    
+    @GetMapping("/api/v2/simple-orders")
+    public List<SimpleOrderDto> orderV2() {
+        List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+        log.debug("orders = {}", orders.toString());
+  
+        List<SimpleOrderDto> result = orders.stream()
+                  .map(m -> new SimpleOrderDto(m))
+                  .collect(Collectors.toList());
+        return result;
+    }
+  
+    @Data
+    static class SimpleOrderDto {
+        private Long orderId;
+        private String username;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private Address address;
+    
+        public SimpleOrderDto(Order order) {
+            this.orderId = order.getId();
+            this.username = order.getMember().getUsername();
+            this.orderDate = order.getOrderDate();
+            this.orderStatus = order.getStatus();
+            this.address = order.getDelivery.getAddress();
+        }
+    }
+}
+```
+
+기존 V1 API에서는 DTO로 변환하는 과정 없이 엔티티 자체를 반환 결과로 제공 하였다. 
+이번에는 SimpleOrderDto라는 DTO를 생성한 결과를 반환 해주는 예제다.
+
+```json
+[
+    {
+        "orderId": 4,
+        "username": "userA",
+        "orderDate": "2022-04-28T21:11:18.49015",
+        "orderStatus": "ORDER",
+        "address": {
+            "city": "서울",
+            "street": "1",
+            "zipcode": "1111"
+        }
+    },
+    {
+        "orderId": 11,
+        "username": "userB",
+        "orderDate": "2022-04-28T21:11:18.532793",
+        "orderStatus": "ORDER",
+        "address": {
+            "city": "부산",
+            "street": "2",
+            "zipcode": "2222"
+        }
+    }
+]
+```
+
+- DTO 결과값은 위와 같다
+
+> 이번에는 기존 @JsonIgnore와 Hibernate5Module의 설정 값을 지운 후 요청을 날려 보았다.
+
+```java
+@SpringBootApplication
+public class Application {
+
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
+
+    // Hibernate5Module 관련 설정 주석 처리
+//	@Bean
+//	Hibernate5Module hibernate5Module() {
+//		Hibernate5Module hibernate5Module = new Hibernate5Module();
+//		hibernate5Module.configure(Hibernate5Module.Feature.FORCE_LAZY_LOADING, true); // 사용 지양 해야 함
+//		return hibernate5Module;
+//	}
+}
+```
+
+```java
+//    @JsonIgnore
+@OneToOne(mappedBy = "delivery", fetch = FetchType.LAZY)
+private Order order;
+```
+
+```java
+//    @JsonIgnore
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "order_id")
+private Order order;
+```
+
+```java
+//    @JsonIgnore
+@OneToMany(mappedBy = "member")
+private List<Order> orders = new ArrayList<>();
+```
+
+- 혹시나 하는 마음에 모든 @JsonIgnore와 Hibernate5Module을 제거한 후 다시 테스트 진행
+- 결과는 이전과 동일하다
+
+```json
+[
+    {
+        "orderId": 4,
+        "username": "userA",
+        "orderDate": "2022-04-28T21:11:18.49015",
+        "orderStatus": "ORDER",
+        "address": {
+            "city": "서울",
+            "street": "1",
+            "zipcode": "1111"
+        }
+    },
+    {
+        "orderId": 11,
+        "username": "userB",
+        "orderDate": "2022-04-28T21:11:18.532793",
+        "orderStatus": "ORDER",
+        "address": {
+            "city": "부산",
+            "street": "2",
+            "zipcode": "2222"
+        }
+    }
+]
+```
+
+> 여기서 중요한 부분을 다시 한번 짚고 넘어가자 
+
+1. 엔티티를 직접 반환하는 경우, 한 쪽은 반드시 @JsonIgnore를 선언해야 한다
+2. 만약 지연 로딩이 있는 경우 Hibernate5Module 설정을 따로 지정 해줘야 한다
+3. `하지만 엔티티를 DTO로 변환하여 사용하게 되면, 위와 같은 부분을 신경 쓸 필요가 없다`
+4. 위와 같이 사용하는 경우, 엔티티가 변해도 API 스펙이 변할 일이 없다
+
+> 하지만 현재 지연 로딩으로 인해 데이터베이스 쿼리가 너무 많이 요청되는 경우가 있다
+
+```log
+2022-04-28 21:25:34.153  INFO 47804 --- [nio-8080-exec-3] j.jpa.shop.repository.OrderRepository    : jpql query = select o from Order o join o.member m
+2022-04-28 21:25:34.154  INFO 47804 --- [nio-8080-exec-3] j.jpa.shop.repository.OrderRepository    : query = org.hibernate.query.internal.QueryImpl@4737c051
+2022-04-28 21:25:34.154 DEBUG 47804 --- [nio-8080-exec-3] org.hibernate.SQL                        : 
+    select
+        order0_.order_id as order_id1_6_,
+        order0_.delivery_id as delivery4_6_,
+        order0_.member_id as member_i5_6_,
+        order0_.order_date as order_da2_6_,
+        order0_.status as status3_6_ 
+    from
+        orders order0_ 
+    inner join
+        member member1_ 
+            on order0_.member_id=member1_.member_id limit ?
+```
+
+우선 inner join은 무시하고 select - from 절을 살펴보자.  
+일단 order 테이블에서 데이터를 긁어와서 반환을 해준다.
+
+```java
+public class OrderSimpleController {
+    
+    //... 중략
+    
+    @GetMapping("/api/v2/simple-orders")
+    public List<SimpleOrderDto> orderV2() {
+        // JPQL에 의해 ORDER와 Member를 조인한 결과를 '2개' 반환 한다. 여기서 2개란 userA, userB가 주문한 내역을 의미 한다.
+        // stream 사용 시 2번의 Loop를 돌게 되는데, 이 때 지연 로딩에 의해 n + 1 문제가 발생할 수 있다
+  
+        // (중요) N + 1 문제, fetch 조인으로 해결이 가능하나 현재는 사용 안함
+  
+        // 첫 번째 쿼리의 결과로 N 번 만큼 쿼리가 추가적으로 실행 되는 경우를 -> N + 1 상황
+        // ex) 1 + 회원 N + 배송 N
+        // ex) 1 + 회원 2 + 배송 2 ==> 5
+        List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+        log.debug("orders = {}", orders.toString());
+
+        // 절대적으로 DTO로 변환해서 보내야 한다
+        // 주문 결과가 2개, Loop가 2번 돈다
+        List<SimpleOrderDto> result = orders.stream()
+                .map(m -> new SimpleOrderDto(m)) // stream을 통해 Loop 를 돌게 되면 n + 1 문제 발생
+                .collect(Collectors.toList());
+        return result;
+    }
+  
+    @Data
+    static class SimpleOrderDto {
+        private Long orderId;
+        private String username;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private Address address;
+
+      /**
+       * LAZY(지연 로딩)가 초기화 되는 경우, 영속성 컨텍스트가 member_id를 가지고
+       * 영속성 컨텍스트를 찾아본 다음 없으면 DB에 데이터를 날리게 된다.
+       * 
+       * @param order
+       */
+      public SimpleOrderDto(Order order) {
+            this.orderId = order.getId();
+            this.username = order.getMember().getUsername(); // LAZY 초기화
+            this.orderDate = order.getOrderDate();
+            this.orderStatus = order.getStatus();
+            this.address = order.getDelivery().getAddress();  // LAZY 초기화
+        }
+    }    
+}
+```
+
+- 쿼리가 1 + N + N 번 실행되는 소스
+  - order 조회가 `1`
+  - order -> member 지연 로딩 조회 `N`번
+  - order -> delivery 지연 로딩 조회 `N`번
+  - 예) order의 결과가 4개면 최악의 경우 1 + 4 + 4번 실행 된다
+    - 지연 로딩은 영속성 컨텍스트에서 조회, 이미 조회된 경우 쿼리 생략
+
+```java
+2022-04-28 21:25:34.158 DEBUG 47804 --- [nio-8080-exec-3] org.hibernate.SQL                        : 
+    select
+        member0_.member_id as member_i1_4_0_,
+        member0_.city as city2_4_0_,
+        member0_.street as street3_4_0_,
+        member0_.zipcode as zipcode4_4_0_,
+        member0_.username as username5_4_0_ 
+    from
+        member member0_ 
+    where
+        member0_.member_id=? // id 값으로 질의
+```
+
+- **영속성 컨텍스트에 의해 2번째 쿼리가 날라간 로그**
+- this.username = order.getMember().getUsername(); // LAZY 초기화
+
+```log
+2022-04-28 22:31:40.542 DEBUG 55836 --- [nio-8080-exec-1] org.hibernate.SQL                        : 
+    select
+        delivery0_.delivery_id as delivery1_2_0_,
+        delivery0_.city as city2_2_0_,
+        delivery0_.street as street3_2_0_,
+        delivery0_.zipcode as zipcode4_2_0_,
+        delivery0_.status as status5_2_0_ 
+    from
+        delivery delivery0_ 
+    where
+        delivery0_.delivery_id=?
+```
+
+- 세 번째로 지연 로딩 Delivery에 의해 쿼리가 나가게 된다
+- this.address = order.getDelivery().getAddress(); // 해당 영역
+
+
+          

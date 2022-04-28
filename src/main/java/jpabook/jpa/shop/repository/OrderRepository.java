@@ -1,6 +1,7 @@
 package jpabook.jpa.shop.repository;
 
 import jpabook.jpa.shop.domain.Order;
+import jpabook.jpa.shop.domain.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,83 +29,74 @@ public class OrderRepository {
         return em.find(Order.class, id);
     }
 
-    // 검색
     public List<Order> findAllByString(OrderSearch orderSearch) {
-        // 기본적으로 값이 모두 있다 가정하고 JPQL을 사용하는 방식
-        /*return em.createQuery("select o from Order o join o.member m" +
-                                            " where o.status = :status" +
-                                            " and m.username like :name", Order.class)
-                 .setParameter("status", orderSearch.getOrderStatus())
-                 .setParameter("name", orderSearch.getMemberName())
-                 .setFirstResult(100)
-                 .setMaxResults(1000) // 최대 1000건
-                 .getResultList();*/
 
-        // JPQL 동적 쿼리 작성
         String jpql = "select o from Order o join o.member m";
         boolean isFirstCondition = true;
 
-        // 주문 상태 검색
-        if(orderSearch.getOrderStatus() != null) { // 주문 상태 입력이 있을 경우(회원 명X)
-            if(isFirstCondition) { // 데이터가 조건절의 첫번째로 들어온 경우
-                jpql += " where";
-                isFirstCondition = false;
-            } else { // 조건절의 첫번째 요소가 아닌 경우
-                jpql += " and";
-            }
-            jpql += " o.status = :status";
-        }
-
-        if(StringUtils.hasText(orderSearch.getMemberName())) { // 회원 명 데이터 입력이 있을 경우(주문 상태X)
-            if(isFirstCondition) {
+        //주문 상태 검색
+        if (orderSearch.getOrderStatus() != null) {
+            if (isFirstCondition) {
                 jpql += " where";
                 isFirstCondition = false;
             } else {
                 jpql += " and";
             }
-            jpql += " m.username like :username";
+            jpql += " o.status = :status";
         }
 
-        log.info("jpql query = {}", jpql);
-        TypedQuery<Order> query = em.createQuery(jpql, Order.class).setMaxResults(1000);
+        //회원 이름 검색
+        if (StringUtils.hasText(orderSearch.getMemberName())) {
+            if (isFirstCondition) {
+                jpql += " where";
+                isFirstCondition = false;
+            } else {
+                jpql += " and";
+            }
+            jpql += " m.name like :name";
+        }
+
+        TypedQuery<Order> query = em.createQuery(jpql, Order.class)
+                .setMaxResults(1000);
+
+        log.info("orderSearch.getOrderStatus = {}", orderSearch.getOrderStatus());
+        if (orderSearch.getOrderStatus() != null && orderSearch.getOrderStatus() != "") {
+            log.error("Error!");
+            OrderStatus orderStatus = OrderStatus.valueOf(orderSearch.getOrderStatus()); // 220428(목) 기존 enum String 타입으로 그냥 넣었을 때 계속 Error 발생 -> 변경
+            log.info("orderStatus = {}", orderStatus);
+
+            query = query.setParameter("status", orderStatus);
+        }
+        if (StringUtils.hasText(orderSearch.getMemberName())) {
+            query = query.setParameter("name", orderSearch.getMemberName());
+        }
         log.info("query = {}", query);
-
-        // 파라미터 바인딩 또한 동적으로 해야 한다.
-        // FIXME: Did not match type Error
-        if(orderSearch.getOrderStatus() != null) {
-            query = query.setParameter("status", orderSearch.getOrderStatus());
-        }
-
-        if(StringUtils.hasText(orderSearch.getMemberName())) {
-            query = query.setParameter("username", orderSearch.getMemberName());
-        }
-
         return query.getResultList();
     }
 
-    // JPA 표준 동적 쿼리, QueryDSL 사용하는게 더 좋음
+    /**
+     * JPA Criteria
+     */
     public List<Order> findAllByCriteria(OrderSearch orderSearch) {
-        // 권장 방식이 아님
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Order> cq = cb.createQuery(Order.class);
         Root<Order> o = cq.from(Order.class);
-        Join<Object, Object> member = o.join("member", JoinType.INNER);
+        Join<Object, Object> m = o.join("member", JoinType.INNER);
 
         List<Predicate> criteria = new ArrayList<>();
 
-        // 주문 상태 검색
+        //주문 상태 검색
         if (orderSearch.getOrderStatus() != null) {
             Predicate status = cb.equal(o.get("status"), orderSearch.getOrderStatus());
             criteria.add(status);
         }
-
-        // 회원 이름 검색
+        //회원 이름 검색
         if (StringUtils.hasText(orderSearch.getMemberName())) {
-            Predicate name = cb.like(member.get("username"), "%" + orderSearch.getMemberName() + "%");
+            Predicate name =
+                    cb.like(m.<String>get("name"), "%" + orderSearch.getMemberName() + "%");
             criteria.add(name);
         }
 
-        // 조건절
         cq.where(cb.and(criteria.toArray(new Predicate[criteria.size()])));
         TypedQuery<Order> query = em.createQuery(cq).setMaxResults(1000);
         return query.getResultList();
