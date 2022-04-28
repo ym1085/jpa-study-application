@@ -123,10 +123,8 @@ No serializer found for class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterc
 no properties discovered to create BeanSerializer
 ```
 
-위와 같은 에러가 발생하는 이유는 Member의 로딩 전략은 LAZY 타입이기 때문이다. 
-즉, 지연 로딩을 사용하는 경우 실제 객체를 가져오는 것이 아닌 프록시 객체를 가져오게 되는데,  
-Jackson 라이브러리가 실 객체가 아닌 프록시 객체를 가져올 수 없기 때문에 위와 같은 예외가
-발생하게 된다.
+위와 같은 에러가 발생하는 이유는 Member의 로딩 전략은 LAZY 타입이기 때문이다. 즉, 지연 로딩을 사용하는 경우 실제 객체를 가져오는 것이 아닌 프록시 객체를 가져오게 되는데, 
+Jackson 라이브러리가 실 객체가 아닌 프록시 객체를 가져올 수 없기 때문에 위와 같은 예외가 발생하게 된다.
 
 ### Hibernate5Module 디팬던시 주입
 
