@@ -5,6 +5,8 @@ import jpabook.jpa.shop.domain.Order;
 import jpabook.jpa.shop.domain.OrderStatus;
 import jpabook.jpa.shop.repository.OrderRepository;
 import jpabook.jpa.shop.repository.OrderSearch;
+import jpabook.jpa.shop.repository.order.simplequery.OrderSimpleQueryDto;
+import jpabook.jpa.shop.repository.order.simplequery.OrderSimpleQueryRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 public class OrderSimpleAPIController {
 
     private final OrderRepository orderRepository;
+    private final OrderSimpleQueryRepository orderSimpleQueryRepository;
 
     // 엔티티 반환
     @GetMapping("/api/v1/simple-orders")
@@ -41,6 +44,7 @@ public class OrderSimpleAPIController {
         return orders;
     }
 
+    // TODO: V3 fetch 조인 최적화 진행
     @GetMapping("/api/v2/simple-orders")
     public List<SimpleOrderDto> orderV2() {
         // JPQL에 의해 ORDER와 Member를 조인한 결과를 '2개' 반환 한다. 여기서 2개란 userA, userB가 주문한 내역을 의미 한다.
@@ -59,6 +63,20 @@ public class OrderSimpleAPIController {
                 .map(m -> new SimpleOrderDto(m))
                 .collect(Collectors.toList());
         return result;
+    }
+
+    @GetMapping("/api/v3/simple-orders")
+    public List<SimpleOrderDto> orderV3() {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery();
+        List<SimpleOrderDto> result = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
+                .collect(Collectors.toList());
+        return result;
+    }
+
+    @GetMapping("/api/v4/simple-orders")
+    public List<OrderSimpleQueryDto> orderV4() {
+        return orderSimpleQueryRepository.findOrderDtos();
     }
 
     @Data
