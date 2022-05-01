@@ -41,6 +41,7 @@ public class OrderSimpleAPIController {
         return orders;
     }
 
+    // TODO: V3 fetch 조인 최적화 진행
     @GetMapping("/api/v2/simple-orders")
     public List<SimpleOrderDto> orderV2() {
         // JPQL에 의해 ORDER와 Member를 조인한 결과를 '2개' 반환 한다. 여기서 2개란 userA, userB가 주문한 내역을 의미 한다.
@@ -57,6 +58,15 @@ public class OrderSimpleAPIController {
         // 주문 결과가 2개, Loop가 2번 돈다
         List<SimpleOrderDto> result = orders.stream()
                 .map(m -> new SimpleOrderDto(m))
+                .collect(Collectors.toList());
+        return result;
+    }
+
+    @GetMapping("/api/v3/simple-orders")
+    public List<SimpleOrderDto> orderV3() {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery();
+        List<SimpleOrderDto> result = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
                 .collect(Collectors.toList());
         return result;
     }
