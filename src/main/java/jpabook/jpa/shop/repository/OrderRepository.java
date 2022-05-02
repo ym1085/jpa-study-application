@@ -110,4 +110,21 @@ public class OrderRepository {
                         " join fetch o.delivery d", Order.class
         ).getResultList();
     }
+
+    public List<Order> findAllWithItem() {
+        // 1 : N fetch join에서는 페이징 처리를 하면 안된다
+        // 1 : N fetch join에서의 페이징 처리는 상당히 위험한 행위, 메모리에서 페이징
+        // 컬렉션 fetch join은 반드시 1개만 써야 한다. 한 개도 데이터 뻥튀기 되는데 2개면 답이 없음
+
+        return em.createQuery(
+//                "select o from Order o" + // -> ID가 동일하면 Distinct 쳐서 반환 해준다(중복 제거 하고)
+                        "select distinct o from Order o" +
+                        " join fetch o.member m" + // N : 1
+                        " join fetch o.delivery d" + // 1 : 1
+                        " join fetch o.orderItems oi" + // 1 : N -> data 뻥튀기 발생!
+                        " join fetch oi.item i", Order.class)
+                .setFirstResult(1)
+                .setMaxResults(100)
+                .getResultList();
+    }
 }

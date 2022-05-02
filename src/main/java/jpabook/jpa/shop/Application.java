@@ -17,7 +17,7 @@ public class Application {
 //	@Bean
 //	Hibernate5Module hibernate5Module() {
 //		Hibernate5Module hibernate5Module = new Hibernate5Module();
-//		hibernate5Module.configure(Hibernate5Module.Feature.FORCE_LAZY_LOADING, true); // 사용 지양 해야 함
+////		hibernate5Module.configure(Hibernate5Module.Feature.FORCE_LAZY_LOADING, true); // 사용 지양 해야 함
 //		return hibernate5Module;
 //	}
 }
