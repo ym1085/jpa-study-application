@@ -14,10 +14,10 @@ public class Application {
 
 	// 1. 지연 로딩 무시
 	// 2. 강제 Lazy Loading 수행 옵션
-//	@Bean
-//	Hibernate5Module hibernate5Module() {
-//		Hibernate5Module hibernate5Module = new Hibernate5Module();
+	@Bean
+	Hibernate5Module hibernate5Module() {
+		Hibernate5Module hibernate5Module = new Hibernate5Module();
 //		hibernate5Module.configure(Hibernate5Module.Feature.FORCE_LAZY_LOADING, true); // 사용 지양 해야 함
-//		return hibernate5Module;
-//	}
+		return hibernate5Module;
+	}
 }
