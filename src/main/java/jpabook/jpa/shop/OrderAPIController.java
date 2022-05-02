@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -98,6 +99,49 @@ public class OrderAPIController {
                 .map(o -> new OrderDto(o))
                 .collect(Collectors.toList());
         return order;
+    }
+
+    /**
+     * 컬렉션 타입 -> fetch join pagination 사용
+     *
+     * @param offset
+     * @param limit
+     * @return
+     */
+    @GetMapping("/api/v3.1/orders")
+    public List<OrderDto> ordersV3_page(
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "limit", defaultValue = "100") int limit) {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
+        log.info("orders = {}", orders.toString());
+
+        // ====> 1 : N fetch join
+        // Order + Member + Delivery => query(1)
+        // Loop -> OrderItem // Item => query(2)
+
+        List<OrderDto> order = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(Collectors.toList());
+        return order;
+    }
+
+    // test
+    // default.batch_fetch_size : 100
+    // -> 한 방에 긁어와서 셋팅 해둠
+    // Collection 쪽에 @BetchSize(size = 100) 이런식으로도 가능
+    @GetMapping("/api/v3.1.1/orders")
+    public List<OrderDto> ordersV3_page_test(
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "limit", defaultValue = "100") int limit) {
+
+        List<Order> orderList = orderRepository.findAllWithMemberDelivery(offset, limit); // Order + Member + Delivery = pagination
+        log.info("orderList = {}", orderList);
+
+        // query -> 1
+
+        return orderList.stream()
+                .map(order -> new OrderDto(order))
+                .collect(Collectors.toList()); // query -> 2
     }
 
     @Getter
