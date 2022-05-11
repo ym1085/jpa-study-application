@@ -116,3 +116,4 @@ public class OrderRepository {
 
 - xToOne 관계는 페치 조인해도 페이징에 영향을 주지 않음.
 - xToOne 관계는 페치조인으로 쿼리 수를 줄이고 해결하고, 나머지는 hibernate.default_batch_fetch_size로 최적화.
+
