@@ -1,4 +1,4 @@
-package jpabook.jpa.shop;
+package jpabook.jpa.shop.api;
 
 import jpabook.jpa.shop.domain.Address;
 import jpabook.jpa.shop.domain.Order;
@@ -6,6 +6,9 @@ import jpabook.jpa.shop.domain.OrderItem;
 import jpabook.jpa.shop.domain.OrderStatus;
 import jpabook.jpa.shop.repository.OrderRepository;
 import jpabook.jpa.shop.repository.OrderSearch;
+import jpabook.jpa.shop.repository.order.query.OrderFlatDto;
+import jpabook.jpa.shop.repository.order.query.OrderQueryDto;
+import jpabook.jpa.shop.repository.order.query.OrderQueryRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,7 @@ public class OrderAPIController {
 //    private final Logger log = LoggerFactory.getLogger(OrderAPIController.class);
 
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
     /**
      * 엔티티를 직접 조회
@@ -142,6 +146,32 @@ public class OrderAPIController {
         return orderList.stream()
                 .map(order -> new OrderDto(order))
                 .collect(Collectors.toList()); // query -> 2
+    }
+
+    @GetMapping("/api/v4/orders")
+    public List<OrderQueryDto> ordersV4() {
+        return orderQueryRepository.findOrderQueryDtos();
+    }
+
+    @GetMapping("/api/v5/orders")
+    public List<OrderQueryDto> ordersV5() {
+        return orderQueryRepository.findAllByDto_optimization();
+    }
+
+    @GetMapping("/api/v6/orders")
+    public List<OrderFlatDto> ordersV6() {
+        List<OrderFlatDto> flats = orderQueryRepository.findAllByDto_flat();
+
+        // 어떻게든 Loop를 돌려서 중복을 제거하면 되긴 한다
+        // API 스펙에 맞춰서 변환 해주는 과정
+
+//        return flats.stream()
+//                    .collect(Collectors.groupingBy(o -> new OrderQueryDto(o.get, o.getName(), o.getOrderDate(), o.getOrderStatus(), o.getAddress()),
+//                            mapping(o -> new OrderItemQueryDto(o.getOrderId(), o.getItemName(), o.getOrderPrice(), o.getCount()), toList()))).entrySet().stream()
+//                    .map(e -> new OrderQueryDto(e.getKey().getOrderId(), e.getKey().getName(), e.getKey().getOrderDate(), e.getKey().getOrderStatus(),s
+//                            e.getKey().getAddress(), e.getValue()))
+//                    .collect(toList());
+        return flats;
     }
 
     @Getter
