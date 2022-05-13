@@ -162,9 +162,6 @@ public class OrderAPIController {
     public List<OrderFlatDto> ordersV6() {
         List<OrderFlatDto> flats = orderQueryRepository.findAllByDto_flat();
 
-        // 어떻게든 Loop를 돌려서 중복을 제거하면 되긴 한다
-        // API 스펙에 맞춰서 변환 해주는 과정
-
 //        return flats.stream()
 //                    .collect(Collectors.groupingBy(o -> new OrderQueryDto(o.get, o.getName(), o.getOrderDate(), o.getOrderStatus(), o.getAddress()),
 //                            mapping(o -> new OrderItemQueryDto(o.getOrderId(), o.getItemName(), o.getOrderPrice(), o.getCount()), toList()))).entrySet().stream()
