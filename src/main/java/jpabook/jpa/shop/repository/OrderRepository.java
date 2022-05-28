@@ -1,7 +1,11 @@
 package jpabook.jpa.shop.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import jpabook.jpa.shop.domain.Order;
 import jpabook.jpa.shop.domain.OrderStatus;
+import jpabook.jpa.shop.domain.QMember;
+import jpabook.jpa.shop.domain.QOrder;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +18,23 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static jpabook.jpa.shop.domain.QMember.member;
+import static jpabook.jpa.shop.domain.QOrder.order;
+
 @Repository
-@RequiredArgsConstructor
 public class OrderRepository {
-    private Logger log = LoggerFactory.getLogger(OrderRepository.class);
 
     private final EntityManager em;
+    private final JPAQueryFactory query;
+
+    /**
+     * QueryDSL 사용을 위해 아래와 같이 생성자를 따로 뺀다
+     * @param em
+     */
+    public OrderRepository(EntityManager em) {
+        this.em = em;
+        this.query = new JPAQueryFactory(em);
+    }
 
     public void save(Order order) {
         em.persist(order);
@@ -53,24 +68,19 @@ public class OrderRepository {
             } else {
                 jpql += " and";
             }
-            jpql += " m.name like :name";
+            jpql += " m.username like :username";
         }
 
         TypedQuery<Order> query = em.createQuery(jpql, Order.class)
                 .setMaxResults(1000);
 
-        log.info("orderSearch.getOrderStatus = {}", orderSearch.getOrderStatus());
-        if (orderSearch.getOrderStatus() != null && orderSearch.getOrderStatus() != "") {
-            log.error("Error!");
-            OrderStatus orderStatus = OrderStatus.valueOf(orderSearch.getOrderStatus()); // 220428(목) 기존 enum String 타입으로 그냥 넣었을 때 계속 Error 발생 -> 변경
-            log.info("orderStatus = {}", orderStatus);
-
-            query = query.setParameter("status", orderStatus);
+        if (orderSearch.getOrderStatus() != null) {
+            query = query.setParameter("status", orderSearch.getOrderStatus());
         }
         if (StringUtils.hasText(orderSearch.getMemberName())) {
-            query = query.setParameter("name", orderSearch.getMemberName());
+            query = query.setParameter("username", orderSearch.getMemberName());
         }
-        log.info("query = {}", query);
+
         return query.getResultList();
     }
 
@@ -93,13 +103,42 @@ public class OrderRepository {
         //회원 이름 검색
         if (StringUtils.hasText(orderSearch.getMemberName())) {
             Predicate name =
-                    cb.like(m.<String>get("name"), "%" + orderSearch.getMemberName() + "%");
+                    cb.like(m.<String>get("username"), "%" + orderSearch.getMemberName() + "%");
             criteria.add(name);
         }
 
         cq.where(cb.and(criteria.toArray(new Predicate[criteria.size()])));
         TypedQuery<Order> query = em.createQuery(cq).setMaxResults(1000);
         return query.getResultList();
+    }
+
+    /**
+     * 20220528 QueryDSL 사용
+     * @param orderSearch
+     * @return
+     */
+    public List<Order> findAll(OrderSearch orderSearch) {
+        return query
+                .select(order)
+                .from(order)
+                .join(order.member, member)
+                .where(statusEq(orderSearch.getOrderStatus()), nameLike(orderSearch.getMemberName()))
+                .limit(1000)
+                .fetch();
+    }
+
+    private BooleanExpression nameLike(String memberName) {
+        if (!StringUtils.hasText(memberName)) {
+            return null;
+        }
+        return member.username.like(memberName);
+    }
+
+    private BooleanExpression statusEq(OrderStatus statusCondition) {
+        if (statusCondition == null) {
+            return null;
+        }
+        return order.status.eq(statusCondition);
     }
 
     // join fetch

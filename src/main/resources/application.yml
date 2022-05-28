@@ -15,6 +15,7 @@ spring:
 #        show-sql: true
         format_sql: true
         default_batch_fetch_size: 100 # default_batch_fetch_size -> 미리 데이터를 가져와서 IN query를 날린다
+#    open-in-view: false
 
 logging:
   level:

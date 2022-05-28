@@ -35,7 +35,6 @@ public class Order {
 
     private LocalDateTime orderDate;
 
-    @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private OrderStatus status; // 주문 상태 [ORDER, CANCEL]
 
