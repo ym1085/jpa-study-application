@@ -1,5 +1,6 @@
 package jpabook.jpa.shop.repository;
 
+import jpabook.jpa.shop.domain.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -8,5 +9,5 @@ import lombok.ToString;
 public class OrderSearch {
 
     private String memberName;  //회원명
-    private String orderStatus; //주문 상태[ORDER, CANCEL]
+    private OrderStatus orderStatus; //주문 상태[ORDER, CANCEL]
 }

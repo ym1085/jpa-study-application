@@ -30,7 +30,7 @@ public class MemberService {
 
     // 회원 validation
     private void validateDuplicateMember(Member member) {
-        List<Member> findMembers = memberRepository.findByName(member.getUsername());
+        List<Member> findMembers = memberRepository.findByUsername(member.getUsername());
         log.info("findMembers = {}", findMembers.toString());
 
         if (!findMembers.isEmpty()) {
@@ -45,13 +45,13 @@ public class MemberService {
 
     // 회원 단건 조회
     public Member findById(Long id) {
-        return memberRepository.findById(id);
+        return memberRepository.findById(id).get();
     }
 
     // 회원 수정
     @Transactional
     public void update(Long id, String username) {
-        Member member = memberRepository.findById(id);
+        Member member = memberRepository.findById(id).get();
         member.setUsername(username);
     }
 }
